@@ -22,6 +22,9 @@ namespace Core
         public NetworkVariable<int> GoldP1 = new(0);
         public NetworkVariable<int> GoldP2 = new(0);
 
+        public NetworkVariable<int> BonusP1 = new(0);
+        public NetworkVariable<int> BonusP2 = new(0);
+
         private float timer;
 
         private void Awake()
@@ -35,7 +38,6 @@ namespace Core
         public override void OnNetworkSpawn()
         {
             // Determine team based on ClientID (Host = 0 -> Player1, Client = 1 -> Player2)
-            // This matches the logic in NetworkPlayer.cs
             if (NetworkManager.Singleton != null)
             {
                 ulong id = NetworkManager.Singleton.LocalClientId;
@@ -92,8 +94,42 @@ namespace Core
                 }
             }
 
-            if (incP1 != 0) GoldP1.Value += incP1;
-            if (incP2 != 0) GoldP2.Value += incP2;
+            if (incP1 != 0 || BonusP1.Value != 0) GoldP1.Value += incP1 + BonusP1.Value;
+            if (incP2 != 0 || BonusP2.Value != 0) GoldP2.Value += incP2 + BonusP2.Value;
+        }
+
+        public bool TrySpendGold(NodeOwner player, int amount)
+        {
+            if (!IsServer) return false;
+
+            int currentGold = (player == NodeOwner.Player1) ? GoldP1.Value : GoldP2.Value;
+            Debug.Log($"[GoldSystem] TrySpendGold: Player {player} wants to spend {amount}. Current: {currentGold}");
+
+            if (player == NodeOwner.Player1)
+            {
+                if (GoldP1.Value >= amount)
+                {
+                    GoldP1.Value -= amount;
+                    return true;
+                }
+            }
+            else if (player == NodeOwner.Player2)
+            {
+                if (GoldP2.Value >= amount)
+                {
+                    GoldP2.Value -= amount;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void AddIncomeBonus(NodeOwner player, int amount)
+        {
+            if (!IsServer) return;
+
+            if (player == NodeOwner.Player1) BonusP1.Value += amount;
+            else if (player == NodeOwner.Player2) BonusP2.Value += amount;
         }
 
         private void UpdateGoldUI()

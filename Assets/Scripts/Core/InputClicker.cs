@@ -11,6 +11,13 @@ public sealed class InputClicker : MonoBehaviour
     [SerializeField]
     private NodeOwner localPlayer = NodeOwner.Player1;
 
+    private NetworkPlayer networkPlayer;
+
+    public void SetNetworkPlayer(NetworkPlayer player)
+    {
+        networkPlayer = player;
+    }
+
     private void Awake()
     {
         if (mainCamera == null)
@@ -44,14 +51,16 @@ public sealed class InputClicker : MonoBehaviour
         // 1. Если это МОЙ узел — усиливаем
         if (node.Owner == localPlayer)
         {
-            node.AddValue(clickPower);
+            int power = (networkPlayer != null) ? networkPlayer.ClickPower.Value : clickPower;
+            node.AddValue(power);
             return;
         }
 
         // 2. Если узел ЧУЖОЙ или НЕЙТРАЛЬНЫЙ — проверяем атаку по соседям
         if (node.HasNeighborOwnedBy(localPlayer))
         {
-            node.Attack(clickPower, localPlayer);
+            int power = (networkPlayer != null) ? networkPlayer.ClickPower.Value : clickPower;
+            node.Attack(power, localPlayer);
         }
 
     }
