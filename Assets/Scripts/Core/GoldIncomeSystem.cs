@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Core
 {
+    [RequireComponent(typeof(NetworkObject))]
     public sealed class GoldIncomeSystem : NetworkBehaviour
     {
         [SerializeField] private GraphGenerator graph;
@@ -16,22 +17,30 @@ namespace Core
         [SerializeField] private int goldPerValuePerTick = 1;
 
         // Для UI: кто “я” на этом клиенте
-        [SerializeField] private NodeOwner localPlayer = NodeOwner.Player1;
+        private NodeOwner localPlayer = NodeOwner.Neutral;
 
         public NetworkVariable<int> GoldP1 = new(0);
         public NetworkVariable<int> GoldP2 = new(0);
 
         private float timer;
 
+        private void Awake()
+        {
+            if (graph == null)
+            {
+                graph = FindObjectOfType<GraphGenerator>();
+            }
+        }
+
         public override void OnNetworkSpawn()
         {
-            // Простейшее сопоставление ролей:
-            // Host/Server -> Player1, Client -> Player2
-            if (NetworkManager != null)
+            // Determine team based on ClientID (Host = 0 -> Player1, Client = 1 -> Player2)
+            // This matches the logic in NetworkPlayer.cs
+            if (NetworkManager.Singleton != null)
             {
-                localPlayer = (NetworkManager.IsHost || NetworkManager.IsServer)
-                    ? NodeOwner.Player1
-                    : NodeOwner.Player2;
+                ulong id = NetworkManager.Singleton.LocalClientId;
+                localPlayer = (id == 0) ? NodeOwner.Player1 : NodeOwner.Player2;
+                Debug.Log($"[GoldSystem] Spawned. LocalID: {id}, Team: {localPlayer}");
             }
 
             GoldP1.OnValueChanged += (_, __) => UpdateGoldUI();
@@ -94,8 +103,18 @@ namespace Core
                 return;
             }
 
-            int g = (localPlayer == NodeOwner.Player1) ? GoldP1.Value : GoldP2.Value;
+            int g = 0;
+            if (localPlayer == NodeOwner.Player1) g = GoldP1.Value;
+            else if (localPlayer == NodeOwner.Player2) g = GoldP2.Value;
+
             goldText.text = $"Gold: {g}";
+        }
+
+        public int GetGold(NodeOwner player)
+        {
+            if (player == NodeOwner.Player1) return GoldP1.Value;
+            if (player == NodeOwner.Player2) return GoldP2.Value;
+            return 0;
         }
     }
 }

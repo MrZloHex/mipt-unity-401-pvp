@@ -44,10 +44,8 @@ namespace Core
                 ) * radius;
 
                 NodeView node = Instantiate(nodePrefab, pos, Quaternion.identity, transform);
-                node.Init(i);
                 node.name = $"Node_{i}";
                 int v = Random.Range(startValueMin, startValueMax + 1);
-                node.SetValue(v);
 
                 var netObj = node.GetComponent<NetworkObject>();
                 if (netObj != null)
@@ -66,6 +64,9 @@ namespace Core
                 {
                     Debug.LogWarning($"Node prefab '{nodePrefab.name}' does not contain a NetworkObject. Add one to enable networking.");
                 }
+
+                node.Init(i);
+                node.SetValue(v);
 
                 _nodes.Add(node);
             }
