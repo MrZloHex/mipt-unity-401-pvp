@@ -62,5 +62,12 @@ public sealed class InputClicker : MonoBehaviour
         }
 
     }
+    
+    public void SetLocalPlayer(NodeOwner player)
+    {
+        localPlayer = player;
+    }
+    
+    public NodeOwner LocalPlayer => localPlayer;
 }
 
