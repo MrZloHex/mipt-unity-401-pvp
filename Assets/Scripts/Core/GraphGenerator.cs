@@ -15,7 +15,12 @@ namespace Core
         [SerializeField] private float radius = 4.0f;
         [SerializeField] private int connectionsPerNode = 2;
 
+        [Header("Start values")]
+        [SerializeField] private int startValueMin = 1;
+        [SerializeField] private int startValueMax = 10;
+
         private readonly List<NodeView> _nodes = new();
+        public IReadOnlyList<NodeView> Nodes => _nodes;
 
         public override void OnNetworkSpawn()
         {
@@ -41,6 +46,8 @@ namespace Core
                 NodeView node = Instantiate(nodePrefab, pos, Quaternion.identity, transform);
                 node.Init(i);
                 node.name = $"Node_{i}";
+                int v = Random.Range(startValueMin, startValueMax + 1);
+                node.SetValue(v);
 
                 var netObj = node.GetComponent<NetworkObject>();
                 if (netObj != null)

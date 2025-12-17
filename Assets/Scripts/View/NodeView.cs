@@ -97,6 +97,11 @@ public sealed class NodeView : NetworkBehaviour
         }
     }
 
+    public void SetValue(int v)
+    {
+        netValue.Value = v;
+    }
+
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void RequestSubValueRpc(int delta)
     {
