@@ -1,3 +1,9 @@
 Build/
 Assembly-CSharp.csproj
 Logs/
+Library/
+Temp/
+obj/
+.idea/
+.vscode/
+

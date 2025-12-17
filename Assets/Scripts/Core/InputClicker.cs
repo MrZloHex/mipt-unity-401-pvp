@@ -51,16 +51,16 @@ public sealed class InputClicker : MonoBehaviour
         // 2. Если узел ЧУЖОЙ или НЕЙТРАЛЬНЫЙ — проверяем атаку по соседям
         if (node.HasNeighborOwnedBy(localPlayer))
         {
-            node.SubValue(clickPower);
-
-            // 3. Захват узла
-            if (node.Value == 0)
-            {
-                node.SetOwner(localPlayer);
-                node.AddValue(1); // чтобы не остался с 0
-            }
+            node.Attack(clickPower, localPlayer);
         }
 
     }
+    
+    public void SetLocalPlayer(NodeOwner player)
+    {
+        localPlayer = player;
+    }
+    
+    public NodeOwner LocalPlayer => localPlayer;
 }
 

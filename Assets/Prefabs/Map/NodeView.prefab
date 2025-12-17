@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2927207074844696879}
   - component: {fileID: 8455731225921805151}
   - component: {fileID: 3553056107427023659}
+  - component: {fileID: -6253210213131846169}
   - component: {fileID: -5813715394486375096}
   m_Layer: 0
   m_Name: NodeView
@@ -129,6 +130,31 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
+--- !u!114 &-6253210213131846169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6502913507228541107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 2788615868
+  InScenePlacedSourceGlobalObjectIdHash: 1990489446
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &-5813715394486375096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,8 +167,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c718a0d4c3526f4e6a8b9652a02eecb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NodeView
+  ShowTopMostFoldoutHeaderGroup: 1
   valueText: {fileID: 3408692434888452956}
-  value: 1
   spriteRenderer: {fileID: 0}
 --- !u!1 &6703178554030175293
 GameObject:
