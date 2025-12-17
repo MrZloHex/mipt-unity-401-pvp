@@ -10,14 +10,19 @@ public sealed class NodeView : NetworkBehaviour
 
     private readonly NetworkVariable<int> netValue = new NetworkVariable<int>(1);
     private readonly NetworkVariable<NodeOwner> netOwner = new NetworkVariable<NodeOwner>(NodeOwner.Neutral);
+    private readonly NetworkVariable<int> netId = new NetworkVariable<int>(0);
 
     [SerializeField] private SpriteRenderer spriteRenderer;
 
-    public int Id { get; private set; }
+    public int Id => netId.Value;
     public NodeOwner Owner => netOwner.Value;
+
+    private NetworkList<NetworkBehaviourReference> neighbors;
 
     private void Awake()
     {
+        neighbors = new NetworkList<NetworkBehaviourReference>();
+
         if (valueText == null)
         {
             valueText = GetComponentInChildren<TMP_Text>();
@@ -100,7 +105,10 @@ public sealed class NodeView : NetworkBehaviour
 
     public void Init(int id)
     {
-        Id = id;
+        if (IsServer)
+        {
+            netId.Value = id;
+        }
     }
 
     public void SetOwner(NodeOwner owner)
@@ -138,38 +146,83 @@ public sealed class NodeView : NetworkBehaviour
         }
     }
 
-    private readonly List<NodeView> neighbors = new List<NodeView>();
-
     public bool HasNeighbor(NodeView other)
     {
-        return neighbors.Contains(other);
-    }
-
-    public void AddNeighbor(NodeView other)
-    {
-        if (other == null || other == this)
+        foreach (var neighborRef in neighbors)
         {
-            return;
-        }
-
-        if (!neighbors.Contains(other))
-        {
-            neighbors.Add(other);
-        }
-    }
-
-    public bool HasNeighborOwnedBy(NodeOwner owner)
-    {
-        for (int i = 0; i < neighbors.Count; i++)
-        {
-            if (neighbors[i] != null && neighbors[i].Owner == owner)
+            if (neighborRef.TryGet(out NodeView neighborNode))
             {
-                return true;
+                if (neighborNode == other) return true;
             }
         }
         return false;
     }
 
+    public void AddNeighbor(NodeView other)
+    {
+        if (!IsServer) return;
 
+        if (other == null || other == this)
+        {
+            return;
+        }
 
+        foreach (var neighborRef in neighbors)
+        {
+            if (neighborRef.TryGet(out NodeView neighborNode))
+            {
+                if (neighborNode == other) return;
+            }
+        }
+
+        neighbors.Add(new NetworkBehaviourReference(other));
+    }
+
+    public bool HasNeighborOwnedBy(NodeOwner owner)
+    {
+        foreach (var neighborRef in neighbors)
+        {
+            if (neighborRef.TryGet(out NodeView neighborNode))
+            {
+                if (neighborNode.Owner == owner)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void Attack(int damage, NodeOwner attacker)
+    {
+        if (IsServer)
+        {
+            int newValue = netValue.Value - damage;
+            
+            if (newValue == 0)
+            {
+                netValue.Value = 0;
+                netOwner.Value = NodeOwner.Neutral;
+            }
+            else if (newValue < 0)
+            {
+                netValue.Value = Mathf.Abs(newValue);
+                netOwner.Value = attacker;
+            }
+            else
+            {
+                netValue.Value = newValue;
+            }
+        }
+        else
+        {
+            RequestAttackRpc(damage, attacker);
+        }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void RequestAttackRpc(int damage, NodeOwner attacker)
+    {
+        Attack(damage, attacker);
+    }
 }
